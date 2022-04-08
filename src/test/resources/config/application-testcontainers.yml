@@ -15,9 +15,9 @@ spring:
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
     driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
-    url: jdbc:tc:oracle:thin:@///ORCL?TC_TMPFS=/testtmpfs:rw
-    username: system
-    password: oracle
+    url: jdbc:tc:oracle:thin:@localhost:1521///ORCL?TC_TMPFS=/testtmpfs:rw
+    username: c##admin
+    password: admin
     hikari:
       poolName: Hikari
       auto-commit: false
