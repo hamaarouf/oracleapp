@@ -15,24 +15,34 @@ import com.mycompany.myapp.service.dto.AdminUserDTO;
 import com.mycompany.myapp.service.dto.UserDTO;
 import com.mycompany.myapp.service.mapper.UserMapper;
 import com.mycompany.myapp.web.rest.vm.ManagedUserVM;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.time.Instant;
 import java.util.*;
 import java.util.function.Consumer;
 import javax.persistence.EntityManager;
+import javax.sql.DataSource;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.ClassRule;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.cache.CacheManager;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import org.testcontainers.containers.OracleContainer;
 
 /**
  * Integration tests for the {@link UserResource} REST controller.
  */
+@ActiveProfiles(profiles = "testcontainers")
 @AutoConfigureMockMvc
 @WithMockUser(authorities = AuthoritiesConstants.ADMIN)
 @IntegrationTest
@@ -77,6 +87,28 @@ class UserResourceIT {
     private MockMvc restUserMockMvc;
 
     private User user;
+
+    @ClassRule
+    public static OracleContainer oracleContainer = new OracleContainer("gvenzl/oracle-xe:11");
+
+    @BeforeAll
+    public static void startup() {
+        oracleContainer.start();
+    }
+
+    @TestConfiguration
+    static class OracleTestConfiguration {
+
+        @Bean
+        DataSource dataSource() {
+            HikariConfig hikariConfig = new HikariConfig();
+            hikariConfig.setJdbcUrl(oracleContainer.getJdbcUrl());
+            hikariConfig.setUsername(oracleContainer.getUsername());
+            hikariConfig.setPassword(oracleContainer.getPassword());
+
+            return new HikariDataSource(hikariConfig);
+        }
+    }
 
     @BeforeEach
     public void setup() {
